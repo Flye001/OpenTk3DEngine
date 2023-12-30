@@ -7,6 +7,7 @@ namespace OpenTkEngine
         public Vector3 Point1;
         public Vector3 Point2;
         public Vector3 Point3;
+        public Vector4 Color;
 
         public Triangle()
         {
