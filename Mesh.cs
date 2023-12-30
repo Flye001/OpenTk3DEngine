@@ -35,11 +35,11 @@ namespace OpenTkEngine
                             break;
                         case 'f':
                             var index = line.Split(' ');
-                            var vectors = new Vector3[3]
+                            var vectors = new Vector4[3]
                             {
-                                tempVectors[int.Parse(index[1]) - 1],
-                                tempVectors[int.Parse(index[2]) - 1],
-                                tempVectors[int.Parse(index[3]) - 1]
+                                new(tempVectors[int.Parse(index[1]) - 1], 1),
+                                new(tempVectors[int.Parse(index[2]) - 1], 1),
+                                new(tempVectors[int.Parse(index[3]) - 1], 1)
                             };
                             Triangles.Add(new Triangle(vectors));
                             break;

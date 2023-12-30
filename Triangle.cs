@@ -4,18 +4,18 @@ namespace OpenTkEngine
 {
     internal struct Triangle
     {
-        public Vector3 Point1;
-        public Vector3 Point2;
-        public Vector3 Point3;
+        public Vector4 Point1;
+        public Vector4 Point2;
+        public Vector4 Point3;
 
         public Triangle()
         {
-            Point1 = new Vector3();
-            Point2 = new Vector3();
-            Point3 = new Vector3();
+            Point1 = new Vector4();
+            Point2 = new Vector4();
+            Point3 = new Vector4();
         }
 
-        public Triangle(Vector3[] points)
+        public Triangle(Vector4[] points)
         {
             Point1 = points[0];
             Point2 = points[1];
