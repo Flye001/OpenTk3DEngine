@@ -1,4 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Audio.OpenAL;
+using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -13,25 +15,44 @@ namespace OpenTkEngine
             0.0f,  0.5f, 0.0f  //Top vertex
         };
 
+        // OpenGL stuff
         private int _vertexBufferObject;
         private int _vertexArrayObject;
         private Shader _basicBlueShader;
         private Shader _basicRedShader;
 
+        // Window Size
+        private int _windowWidth;
+        private int _windowHeight;
+
+        // Window Stuff
+        private Matrix4 _projectionMatrix;
+        private float fTheta;
+        private int vertexBufferLength;
+        private int _vertexCount;
+
+        // Models
+        private Mesh _modelMesh;
+
         public Game(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() {ClientSize = (width, height), Title = title})
         {
+            // Init mesh
+            _modelMesh = new();
+            _windowWidth = width;
+            _windowHeight = height;
         }
 
         protected override void OnLoad()
         {
+            // OpenGL Setup
             base.OnLoad();
 
             GL.ClearColor(0f, 0f, 0f, 1f);
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
-            
+            //GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
+
 
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
@@ -40,7 +61,15 @@ namespace OpenTkEngine
 
             _basicBlueShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShaderBlue.frag");
             _basicRedShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShaderRed.frag");
-            _basicBlueShader.Use();
+
+            // Load Mesh
+            if (!_modelMesh.LoadFromObjectFile("GameModels/cube.obj"))
+            {
+                throw new Exception("Failed to load obj file!");
+            }
+
+            var aspect = _windowHeight / (float)_windowWidth;
+            _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 2f, aspect, 0.1f, 1000f);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -51,6 +80,60 @@ namespace OpenTkEngine
             {
                 Close();
             }
+
+            // Create rotation matrix
+            fTheta += 1f * (float)args.Time;
+            var zRotationMatrix = Matrix4.CreateRotationZ(fTheta);
+            var xRotationMatrix = Matrix4.CreateRotationX(fTheta * 0.5f);
+
+            // Generate Cube vectors
+            var translateMatrix = Matrix4.CreateTranslation(0f, 0f, 5f); // Move object backwards
+            var worldMatrix = zRotationMatrix * xRotationMatrix;
+            worldMatrix *= translateMatrix;
+
+            List<float> vertices = new();
+
+            foreach (var triangle in _modelMesh.Triangles)
+            {
+                // Put triangle into world space
+                var transformedTriangle = new Triangle();
+                transformedTriangle.Point1 = triangle.Point1 * worldMatrix;
+                transformedTriangle.Point2 = triangle.Point2 * worldMatrix;
+                transformedTriangle.Point3 = triangle.Point3 * worldMatrix;
+
+                // Put triangle into view Space
+
+                // Project from 3D to 2D
+                var projectedTriangle = new Triangle();
+                projectedTriangle.Point1 = transformedTriangle.Point1 * _projectionMatrix;
+                projectedTriangle.Point2 = transformedTriangle.Point2 * _projectionMatrix;
+                projectedTriangle.Point3 = transformedTriangle.Point3 * _projectionMatrix;
+
+                // Normalize Projection
+                projectedTriangle.Point1 /= projectedTriangle.Point1.W;
+                projectedTriangle.Point2 /= projectedTriangle.Point2.W;
+                projectedTriangle.Point3 /= projectedTriangle.Point3.W;
+
+                vertices.Add(projectedTriangle.Point1.X);
+                vertices.Add(projectedTriangle.Point1.Y);
+                //vertices.Add(projectedTriangle.Point1.Z);
+                vertices.Add(0);
+                vertices.Add(projectedTriangle.Point2.X);
+                vertices.Add(projectedTriangle.Point2.Y);
+                //vertices.Add(projectedTriangle.Point2.Z);
+                vertices.Add(0);
+                vertices.Add(projectedTriangle.Point3.X);
+                vertices.Add(projectedTriangle.Point3.Y);
+                //vertices.Add(projectedTriangle.Point3.Z);
+                vertices.Add(0);
+            }
+
+            var verticesArr = vertices.ToArray();
+            
+            // Buffer custom model
+            vertexBufferLength = verticesArr.Length * sizeof(float);
+            _vertexCount = verticesArr.Length / 3;
+            GL.BufferData(BufferTarget.ArrayBuffer, vertexBufferLength, verticesArr, BufferUsageHint.StaticDraw);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -61,12 +144,12 @@ namespace OpenTkEngine
 
             
             GL.BindVertexArray(_vertexArrayObject);
-            // Draw full circles
-            _basicBlueShader.Use();
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            // Draw solid triangles
+            //_basicBlueShader.Use();
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, _vertexCount);
             // Draw Wireframe
             _basicRedShader.Use();
-            GL.DrawArrays(PrimitiveType.LineLoop, 0, 3);
+            GL.DrawArrays(PrimitiveType.LineLoop, 0, _vertexCount);
             
             SwapBuffers();
         }
