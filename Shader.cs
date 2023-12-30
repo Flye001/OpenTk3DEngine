@@ -4,7 +4,7 @@ namespace OpenTkEngine
 {
     internal class Shader : IDisposable
     {
-        private readonly int _handle;
+        public readonly int Handle;
         private bool _disposedValue = false;
 
         public Shader(string vertexPath, string fragmentPath)
@@ -37,34 +37,34 @@ namespace OpenTkEngine
                 Console.WriteLine(infoLog);
             }
 
-            _handle = GL.CreateProgram();
-            GL.AttachShader(_handle, vertexShader);
-            GL.AttachShader(_handle, fragmentShader);
-            GL.LinkProgram(_handle);
-            GL.GetProgram(_handle, GetProgramParameterName.LinkStatus, out success);
+            Handle = GL.CreateProgram();
+            GL.AttachShader(Handle, vertexShader);
+            GL.AttachShader(Handle, fragmentShader);
+            GL.LinkProgram(Handle);
+            GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out success);
             if (success == 0)
             {
                 // Link Error
-                var infoLog = GL.GetProgramInfoLog(_handle);
+                var infoLog = GL.GetProgramInfoLog(Handle);
                 Console.WriteLine(infoLog);
             }
 
-            GL.DetachShader(_handle, vertexShader);
-            GL.DetachShader(_handle, fragmentShader);
+            GL.DetachShader(Handle, vertexShader);
+            GL.DetachShader(Handle, fragmentShader);
             GL.DeleteShader(vertexShader);
             GL.DeleteShader(fragmentShader);
         }
 
         public void Use()
         {
-            GL.UseProgram(_handle);
+            GL.UseProgram(Handle);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposedValue)
             {
-                GL.DeleteProgram(_handle);
+                GL.DeleteProgram(Handle);
                 _disposedValue = true;
             }
         }

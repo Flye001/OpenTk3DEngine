@@ -63,13 +63,22 @@ namespace OpenTkEngine
             _basicRedShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShaderRed.frag");
 
             // Load Mesh
-            if (!_modelMesh.LoadFromObjectFile("GameModels/cube.obj"))
+            if (!_modelMesh.LoadFromObjectFile("GameModels/teapot.obj"))
             {
                 throw new Exception("Failed to load obj file!");
             }
 
             var aspect = _windowHeight / (float)_windowWidth;
             _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 2f, aspect, 0.1f, 1000f);
+            //var m = Matrix4.CreateTranslation(0.5f, 0.5f, 0f);
+            var m = Matrix4.Identity;
+
+            _basicRedShader.Use();
+            var projMatLocationRed = GL.GetUniformLocation(_basicRedShader.Handle, "projMatrix");
+            GL.UniformMatrix4(projMatLocationRed, true, ref m);
+            _basicBlueShader.Use();
+            var projMatLocationBlue = GL.GetUniformLocation(_basicBlueShader.Handle, "projMatrix");
+            GL.UniformMatrix4(projMatLocationBlue, true, ref m);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -104,6 +113,7 @@ namespace OpenTkEngine
                 // Put triangle into view Space
 
                 // Project from 3D to 2D
+                //var projectedTriangle = transformedTriangle;
                 var projectedTriangle = new Triangle();
                 projectedTriangle.Point1 = transformedTriangle.Point1 * _projectionMatrix;
                 projectedTriangle.Point2 = transformedTriangle.Point2 * _projectionMatrix;
@@ -145,12 +155,12 @@ namespace OpenTkEngine
             
             GL.BindVertexArray(_vertexArrayObject);
             // Draw solid triangles
-            //_basicBlueShader.Use();
-            //GL.DrawArrays(PrimitiveType.Triangles, 0, _vertexCount);
+            _basicBlueShader.Use();
+            GL.DrawArrays(PrimitiveType.Triangles, 0, _vertexCount);
             // Draw Wireframe
             _basicRedShader.Use();
             GL.DrawArrays(PrimitiveType.LineLoop, 0, _vertexCount);
-            
+
             SwapBuffers();
         }
 
