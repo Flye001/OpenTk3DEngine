@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Diagnostics;
 
 namespace OpenTkEngine
 {
@@ -20,6 +21,10 @@ namespace OpenTkEngine
         private int _vertexArrayObject;
         private Shader _basicBlueShader;
         private Shader _basicRedShader;
+
+        // FPS Stuff
+        private double deltaTime;
+        private int frameCount = 0;
 
         // Window Size
         private int _windowWidth;
@@ -73,12 +78,12 @@ namespace OpenTkEngine
             //var m = Matrix4.CreateTranslation(0.5f, 0.5f, 0f);
             var m = Matrix4.Identity;
 
-            _basicRedShader.Use();
-            var projMatLocationRed = GL.GetUniformLocation(_basicRedShader.Handle, "projMatrix");
-            GL.UniformMatrix4(projMatLocationRed, true, ref m);
-            _basicBlueShader.Use();
-            var projMatLocationBlue = GL.GetUniformLocation(_basicBlueShader.Handle, "projMatrix");
-            GL.UniformMatrix4(projMatLocationBlue, true, ref m);
+            //_basicRedShader.Use();
+            //var projMatLocationRed = GL.GetUniformLocation(_basicRedShader.Handle, "projMatrix");
+            //GL.UniformMatrix4(projMatLocationRed, true, ref m);
+            //_basicBlueShader.Use();
+            //var projMatLocationBlue = GL.GetUniformLocation(_basicBlueShader.Handle, "projMatrix");
+            //GL.UniformMatrix4(projMatLocationBlue, true, ref m);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -88,6 +93,18 @@ namespace OpenTkEngine
             if (KeyboardState.IsKeyDown(Keys.Escape))
             {
                 Close();
+            }
+
+            // Print FPS
+            deltaTime += args.Time;
+            frameCount++;
+
+            if (deltaTime >= 1)
+            {
+                var fps = frameCount / deltaTime;
+                Console.WriteLine("FPS: " + fps);
+                deltaTime = 0;
+                frameCount = 0;
             }
 
             // Create rotation matrix
@@ -102,40 +119,30 @@ namespace OpenTkEngine
 
             List<float> vertices = new();
 
+            // Set the transformation
+            var finalTransformation = worldMatrix * _projectionMatrix;
+            _basicRedShader.Use();
+            var projMatLocationRed = GL.GetUniformLocation(_basicRedShader.Handle, "projMatrix");
+            GL.UniformMatrix4(projMatLocationRed, true, ref finalTransformation);
+            _basicBlueShader.Use();
+            var projMatLocationBlue = GL.GetUniformLocation(_basicBlueShader.Handle, "projMatrix");
+            GL.UniformMatrix4(projMatLocationBlue, true, ref finalTransformation);
+
             foreach (var triangle in _modelMesh.Triangles)
             {
-                // Put triangle into world space
-                var transformedTriangle = new Triangle();
-                transformedTriangle.Point1 = triangle.Point1 * worldMatrix;
-                transformedTriangle.Point2 = triangle.Point2 * worldMatrix;
-                transformedTriangle.Point3 = triangle.Point3 * worldMatrix;
-
-                // Put triangle into view Space
-
-                // Project from 3D to 2D
-                //var projectedTriangle = transformedTriangle;
-                var projectedTriangle = new Triangle();
-                projectedTriangle.Point1 = transformedTriangle.Point1 * _projectionMatrix;
-                projectedTriangle.Point2 = transformedTriangle.Point2 * _projectionMatrix;
-                projectedTriangle.Point3 = transformedTriangle.Point3 * _projectionMatrix;
-
-                // Normalize Projection
-                projectedTriangle.Point1 /= projectedTriangle.Point1.W;
-                projectedTriangle.Point2 /= projectedTriangle.Point2.W;
-                projectedTriangle.Point3 /= projectedTriangle.Point3.W;
-
-                vertices.Add(projectedTriangle.Point1.X);
-                vertices.Add(projectedTriangle.Point1.Y);
-                //vertices.Add(projectedTriangle.Point1.Z);
-                vertices.Add(0);
-                vertices.Add(projectedTriangle.Point2.X);
-                vertices.Add(projectedTriangle.Point2.Y);
-                //vertices.Add(projectedTriangle.Point2.Z);
-                vertices.Add(0);
-                vertices.Add(projectedTriangle.Point3.X);
-                vertices.Add(projectedTriangle.Point3.Y);
-                //vertices.Add(projectedTriangle.Point3.Z);
-                vertices.Add(0);
+                // Add vertices to 
+                vertices.Add(triangle.Point1.X);
+                vertices.Add(triangle.Point1.Y);
+                vertices.Add(triangle.Point1.Z);
+                //vertices.Add(0);
+                vertices.Add(triangle.Point2.X);
+                vertices.Add(triangle.Point2.Y);
+                vertices.Add(triangle.Point2.Z);
+                //vertices.Add(0);
+                vertices.Add(triangle.Point3.X);
+                vertices.Add(triangle.Point3.Y);
+                vertices.Add(triangle.Point3.Z);
+                //vertices.Add(0);
             }
 
             var verticesArr = vertices.ToArray();
