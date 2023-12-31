@@ -1,10 +1,11 @@
 ﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 
 namespace OpenTkEngine
 {
     internal class Shader : IDisposable
     {
-        public readonly int Handle;
+        private readonly int Handle;
         private bool _disposedValue = false;
 
         public Shader(string vertexPath, string fragmentPath)
@@ -58,6 +59,13 @@ namespace OpenTkEngine
         public void Use()
         {
             GL.UseProgram(Handle);
+        }
+
+        public void SetMatrix4(string name, ref Matrix4 matrix)
+        {
+            GL.UseProgram(Handle);
+            var location = GL.GetUniformLocation(Handle, name);
+            GL.UniformMatrix4(location, true, ref matrix);
         }
 
         protected virtual void Dispose(bool disposing)
