@@ -44,6 +44,7 @@ namespace OpenTkEngine
                 }
             }
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, img.Width, img.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels.ToArray());
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
         }
 
         public void Use()

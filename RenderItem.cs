@@ -17,7 +17,7 @@ namespace OpenTkEngine
 
         private bool _rotate;
 
-        public RenderItem(string modelPath, Vector3 position, Vector3 color, Shader shader, bool hasTexture = false, bool rotate = false, float scale = 1f, Texture tex = null)
+        public RenderItem(string modelPath, Vector3 position, Vector3 color, Shader shader, bool hasTexture = false, bool rotate = false, float scale = 1f, Texture texture = null)
         {
             Mesh mesh = new();
             if (!mesh.LoadFromObjectFile(modelPath, hasTexture))
@@ -26,7 +26,7 @@ namespace OpenTkEngine
             }
 
             _shader = shader;
-            _texture = tex;
+            _texture = texture;
             _rotate = rotate;
             _position = position;
             _scale = scale;
@@ -125,9 +125,15 @@ namespace OpenTkEngine
 
         public void Draw()
         {
+            //if (_texture != null)
+            //{
+            //    _texture.Use();
+            //    _shader.SetInt("texture0", 1);
+            //}
+
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BindVertexArray(_vertexArrayObject);
-            if (_texture != null) _texture.Use();
+
             _shader.Use();
             var model = _modelMatrix;
             var normalMatrix = new Matrix3(Matrix4.Transpose(Matrix4.Invert(model)));

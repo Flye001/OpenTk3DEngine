@@ -8,11 +8,7 @@ namespace OpenTkEngine
 {
     internal class Game : GameWindow
     {
-
-        // OpenGL stuff
-        private int _vertexBufferObject;
-        private int _vertexArrayObject;
-
+        
         // Shaders
         private Shader _basicShader;
         private Shader _sunShader;
@@ -20,6 +16,7 @@ namespace OpenTkEngine
 
         // Textures
         private Texture _planeTex;
+        private Texture _spyroTex;
 
         // FPS Stuff
         private double deltaTime;
@@ -30,8 +27,6 @@ namespace OpenTkEngine
         private int _windowHeight;
 
         // Transformation matrices
-        private Matrix4 _modelMatrix; // Moves local object into world space
-        private Matrix4 _viewMatrix; // Transforms objects into camera view space
         private Matrix4 _projectionMatrix; // Transforms objects into clipping space
         // Camera
         private Camera _camera;
@@ -39,8 +34,6 @@ namespace OpenTkEngine
         private bool _firstMove;
         // Misc
         private float fTheta;
-        private int vertexBufferLength;
-        private int _vertexCount;
 
         // Models
         private Mesh _modelMesh;
@@ -83,13 +76,15 @@ namespace OpenTkEngine
             _texShader.SetVector3("lightPos", ref light);
 
             _planeTex = new Texture("GameModels/AirplaneTexture.png");
-            _texShader.SetInt("texture0", 0);
 
-            _renderItems.Add(new RenderItem("GameModels/mountains.obj", new Vector3(10f, -15f, 30f), new Vector3(0.7f, 0.4f, 0.1f), _basicShader));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-35f, -14.5f, 50f), new Vector3(0f, 1f, 0f), _basicShader));
-            _renderItems.Add(new RenderItem("GameModels/cube.obj", new Vector3(0, 30, 0), Vector3.One, _sunShader));
+            //_renderItems.Add(new RenderItem("GameModels/mountains.obj", new Vector3(10f, -15f, 30f), new Vector3(0.7f, 0.4f, 0.1f), _basicShader));
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-35f, -14.5f, 50f), new Vector3(0f, 1f, 0f), _basicShader));
+            //_renderItems.Add(new RenderItem("GameModels/cube.obj", new Vector3(0, 30, 0), Vector3.One, _sunShader));
 
-            _renderItems.Add(new RenderItem("GameModels/Airplane.obj", new Vector3(-100,-10,50f), new(1, 0, 0), _basicShader, hasTexture:true, scale:0.01f));
+            _renderItems.Add(new RenderItem("GameModels/Airplane.obj", new Vector3(0, 0, 0), new(1, 0, 0), _texShader, hasTexture: true, texture: _planeTex, scale: 0.01f));
+
+            //_spyroTex = new Texture("GameModels/spyro.png");
+            //_renderItems.Add(new RenderItem("GameModels/spyro.obj", Vector3.Zero, Vector3.One, _texShader, true, false, 1f, _spyroTex));
 
             //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-35f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
             //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-30f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
@@ -198,6 +193,9 @@ namespace OpenTkEngine
             GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            _planeTex.Use();
+            _texShader.SetInt("texture0", 0);
+
             foreach (var renderItem in _renderItems)
             {
                 renderItem.Draw();
@@ -220,8 +218,8 @@ namespace OpenTkEngine
             GL.BindVertexArray(0);
             GL.UseProgram(0);
 
-            GL.DeleteBuffer(_vertexBufferObject);
-            GL.DeleteVertexArray(_vertexArrayObject);
+            //GL.DeleteBuffer(_vertexBufferObject);
+            //GL.DeleteVertexArray(_vertexArrayObject);
 
             _basicShader.Dispose();
             base.OnUnload();
