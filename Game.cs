@@ -34,7 +34,7 @@ namespace OpenTkEngine
         // Models
         private Mesh _modelMesh;
 
-        public Game(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() {ClientSize = (width, height), Title = title})
+        public Game(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { ClientSize = (width, height), Title = title })
         {
             // Init mesh
             _modelMesh = new();
@@ -48,18 +48,23 @@ namespace OpenTkEngine
             base.OnLoad();
 
             GL.ClearColor(0f, 0f, 0f, 1f);
+            GL.Enable(EnableCap.DepthTest);
+
+            _vertexArrayObject = GL.GenVertexArray();
+            GL.BindVertexArray(_vertexArrayObject);
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
 
-            _vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(_vertexArrayObject);
             // Vertices
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
-            // Colors
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+            // Normals
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(1);
+            // Colors
+            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 6 * sizeof(float));
+            GL.EnableVertexAttribArray(2);
 
             _basicShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShader.frag");
             _basicRedShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShaderRed.frag");
@@ -71,25 +76,34 @@ namespace OpenTkEngine
             }
 
             var aspect = _windowHeight / (float)_windowWidth;
-            _modelMatrix = Matrix4.CreateRotationZ(1f);
-            _viewMatrix = Matrix4.CreateTranslation(0f, 0f, 5f);
+            //_modelMatrix = Matrix4.CreateRotationZ(1f);
+            _viewMatrix = Matrix4.CreateTranslation(0f, 0f, -7f);
             _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 2f, aspect, 0.1f, 100f);
 
 
-            _basicShader.SetMatrix4("model", ref _modelMatrix);
+            //_basicShader.SetMatrix4("model", ref _modelMatrix);
             _basicShader.SetMatrix4("view", ref _viewMatrix);
             _basicShader.SetMatrix4("projection", ref _projectionMatrix);
 
 
             // Load in points
-            Vector3 Color = new(1f, 1f, 0f);
+            Vector3 Color = new(1f, 1f, 1f);
             List<float> vertices = new();
             foreach (var triangle in _modelMesh.Triangles)
             {
+                var line1 = triangle.Point2 - triangle.Point1;
+                var line2 = triangle.Point3 - triangle.Point1;
+                var normal = Vector3.Cross(line1, line2);
+                normal = Vector3.Normalize(normal);
+
                 // Point 1 vertices
                 vertices.Add(triangle.Point1.X);
                 vertices.Add(triangle.Point1.Y);
                 vertices.Add(triangle.Point1.Z);
+                // Point 1 Normal
+                vertices.Add(normal.X);
+                vertices.Add(normal.Y);
+                vertices.Add(normal.Z);
                 // Point 1 Color
                 vertices.Add(Color.X);
                 vertices.Add(Color.Y);
@@ -98,6 +112,10 @@ namespace OpenTkEngine
                 vertices.Add(triangle.Point2.X);
                 vertices.Add(triangle.Point2.Y);
                 vertices.Add(triangle.Point2.Z);
+                // Point 2 Normal
+                vertices.Add(normal.X);
+                vertices.Add(normal.Y);
+                vertices.Add(normal.Z);
                 // Point 2 Color
                 vertices.Add(Color.X);
                 vertices.Add(Color.Y);
@@ -106,6 +124,10 @@ namespace OpenTkEngine
                 vertices.Add(triangle.Point3.X);
                 vertices.Add(triangle.Point3.Y);
                 vertices.Add(triangle.Point3.Z);
+                // Point 3 Normal
+                vertices.Add(normal.X);
+                vertices.Add(normal.Y);
+                vertices.Add(normal.Z);
                 // Point 3 Color
                 vertices.Add(Color.X);
                 vertices.Add(Color.Y);
@@ -148,59 +170,6 @@ namespace OpenTkEngine
 
             _modelMatrix = zRotationMatrix * xRotationMatrix;
             _basicShader.SetMatrix4("model", ref _modelMatrix);
-
-            //// Generate Cube vectors
-            //var translateMatrix = Matrix4.CreateTranslation(0f, 0f, 5f); // Move object backwards
-            //var worldMatrix = zRotationMatrix * xRotationMatrix;
-            //worldMatrix *= translateMatrix;
-
-            //List<float> vertices = new();
-
-            //// Set the transformation
-            //var finalTransformation = worldMatrix * _projectionMatrix;
-            //_basicRedShader.Use();
-            //var projMatLocationRed = GL.GetUniformLocation(_basicRedShader.Handle, "projMatrix");
-            //GL.UniformMatrix4(projMatLocationRed, true, ref finalTransformation);
-            //_basicShader.Use();
-            //var projMatLocationBlue = GL.GetUniformLocation(_basicShader.Handle, "projMatrix");
-            //GL.UniformMatrix4(projMatLocationBlue, true, ref finalTransformation);
-
-            //Vector3 Color = new(1f, 1f, 0f);
-
-            //foreach (var triangle in _modelMesh.Triangles)
-            //{
-            //    // Point 1 vertices
-            //    vertices.Add(triangle.Point1.X);
-            //    vertices.Add(triangle.Point1.Y);
-            //    vertices.Add(triangle.Point1.Z);
-            //    // Point 1 Color
-            //    vertices.Add(Color.X);
-            //    vertices.Add(Color.Y);
-            //    vertices.Add(Color.Z);
-            //    // Point 2 Vertices
-            //    vertices.Add(triangle.Point2.X);
-            //    vertices.Add(triangle.Point2.Y);
-            //    vertices.Add(triangle.Point2.Z);
-            //    // Point 2 Color
-            //    vertices.Add(Color.X);
-            //    vertices.Add(Color.Y);
-            //    vertices.Add(Color.Z);
-            //    // Point 3 Vertices
-            //    vertices.Add(triangle.Point3.X);
-            //    vertices.Add(triangle.Point3.Y);
-            //    vertices.Add(triangle.Point3.Z);
-            //    // Point 3 Color
-            //    vertices.Add(Color.X);
-            //    vertices.Add(Color.Y);
-            //    vertices.Add(Color.Z);
-            //}
-
-            //var verticesArr = vertices.ToArray();
-
-            //// Buffer custom model
-            //vertexBufferLength = verticesArr.Length * sizeof(float);
-            //_vertexCount = verticesArr.Length / 3;
-            //GL.BufferData(BufferTarget.ArrayBuffer, vertexBufferLength, verticesArr, BufferUsageHint.StaticDraw);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -208,8 +177,9 @@ namespace OpenTkEngine
             base.OnRenderFrame(args);
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            
+
             GL.BindVertexArray(_vertexArrayObject);
             // Draw solid triangles
             _basicShader.Use();
