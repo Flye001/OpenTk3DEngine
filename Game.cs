@@ -13,8 +13,13 @@ namespace OpenTkEngine
         private int _vertexBufferObject;
         private int _vertexArrayObject;
 
+        // Shaders
         private Shader _basicShader;
         private Shader _sunShader;
+        private Shader _texShader;
+
+        // Textures
+        private Texture _planeTex;
 
         // FPS Stuff
         private double deltaTime;
@@ -60,6 +65,7 @@ namespace OpenTkEngine
 
             _basicShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShader.frag");
             _sunShader = new Shader("Shaders/basicShader.vert", "Shaders/noLightShader.frag");
+            _texShader = new Shader("Shaders/basicShader.vert", "Shaders/textureShader.frag");
 
             var aspect = _windowWidth / (float)_windowHeight;
 
@@ -70,22 +76,29 @@ namespace OpenTkEngine
 
             _basicShader.SetMatrix4("projection", ref _projectionMatrix);
             _sunShader.SetMatrix4("projection", ref _projectionMatrix);
+            _texShader.SetMatrix4("projection", ref _projectionMatrix);
             var light = new Vector3(0, 30.0f, 0f);
             _basicShader.SetVector3("lightPos", ref light);
             _sunShader.SetVector3("lightPos", ref light);
+            _texShader.SetVector3("lightPos", ref light);
+
+            _planeTex = new Texture("GameModels/AirplaneTexture.png");
+            _texShader.SetInt("texture0", 0);
 
             _renderItems.Add(new RenderItem("GameModels/mountains.obj", new Vector3(10f, -15f, 30f), new Vector3(0.7f, 0.4f, 0.1f), _basicShader));
             _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-35f, -14.5f, 50f), new Vector3(0f, 1f, 0f), _basicShader));
             _renderItems.Add(new RenderItem("GameModels/cube.obj", new Vector3(0, 30, 0), Vector3.One, _sunShader));
 
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-35f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, true));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-30f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, true));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-25f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, true));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-20f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, true));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-15f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, true));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-10f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, true));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-5f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, true));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(0f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, true));
+            _renderItems.Add(new RenderItem("GameModels/Airplane.obj", new Vector3(-100,-10,50f), new(1, 0, 0), _basicShader, hasTexture:true, scale:0.01f));
+
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-35f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-30f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-25f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-20f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-15f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-10f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-5f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
+            //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(0f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
 
         }
 
@@ -170,6 +183,7 @@ namespace OpenTkEngine
             var viewMatrix = _camera.GetViewMatrix();
             _basicShader.SetMatrix4("view", ref viewMatrix);
             _sunShader.SetMatrix4("view", ref viewMatrix);
+            _texShader.SetMatrix4("view", ref viewMatrix);
 
             foreach (var renderItem in _renderItems)
             {

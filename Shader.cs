@@ -1,6 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System.Xml.Linq;
 
 namespace OpenTkEngine
 {
@@ -83,6 +82,13 @@ namespace OpenTkEngine
             GL.Uniform3(location, ref vector);
         }
 
+        public void SetInt(string name, int i)
+        {
+            GL.UseProgram(Handle);
+            var location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform1(location, i);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -105,7 +111,5 @@ namespace OpenTkEngine
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        
     }
 }
