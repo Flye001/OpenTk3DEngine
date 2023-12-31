@@ -1,5 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using System.Xml.Linq;
 
 namespace OpenTkEngine
 {
@@ -68,6 +69,13 @@ namespace OpenTkEngine
             GL.UniformMatrix4(location, true, ref matrix);
         }
 
+        public void SetMatrix3(string name, ref Matrix3 matrix)
+        {
+            GL.UseProgram(Handle);
+            var location = GL.GetUniformLocation(Handle, name);
+            GL.UniformMatrix3(location, true, ref matrix);
+        }
+
         public void SetVector3(string name, ref Vector3 vector)
         {
             GL.UseProgram(Handle);
@@ -97,5 +105,7 @@ namespace OpenTkEngine
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        
     }
 }

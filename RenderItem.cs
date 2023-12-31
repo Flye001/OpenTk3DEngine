@@ -10,9 +10,12 @@ namespace OpenTkEngine
         private readonly int _vertices;
         private readonly Shader _shader;
 
-        public Matrix4 ModelMatrix { get; set; }
+        private Vector3 _position;
+        private Matrix4 _modelMatrix;
 
-        public RenderItem(string modelPath, Matrix4 initialModelMatrix, Vector3 color, Shader shader)
+        private bool _rotate;
+
+        public RenderItem(string modelPath, Vector3 position, Vector3 color, Shader shader, bool rotate = false)
         {
             Mesh mesh = new();
             if (!mesh.LoadFromObjectFile(modelPath))
@@ -20,8 +23,10 @@ namespace OpenTkEngine
                 throw new Exception("Failed to load obj file!");
             }
 
-            ModelMatrix = initialModelMatrix;
             _shader = shader;
+            _rotate = rotate;
+            _position = position;
+            _modelMatrix = Matrix4.CreateTranslation(_position);
 
             // Bind this items vertex array
             _vertexArrayObject = GL.GenVertexArray();
@@ -88,13 +93,29 @@ namespace OpenTkEngine
             GL.BufferData(BufferTarget.ArrayBuffer, verticesArr.Length * sizeof(float), verticesArr, BufferUsageHint.StaticDraw);
         }
 
+        private float fTheta;
+        public void Update(double time)
+        {
+            if (_rotate)
+            {
+                fTheta += 1f * (float)time;
+                var zRotationMatrix = Matrix4.CreateRotationZ(fTheta);
+                var xRotationMatrix = Matrix4.CreateRotationX(fTheta * 0.5f);
+
+                var rot = zRotationMatrix * xRotationMatrix;
+                _modelMatrix = rot * Matrix4.CreateTranslation(_position);
+            }
+        }
+
         public void Draw()
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BindVertexArray(_vertexArrayObject);
             _shader.Use();
-            var model = ModelMatrix;
+            var model = _modelMatrix;
+            var normalMatrix = new Matrix3(Matrix4.Transpose(Matrix4.Invert(model)));
             _shader.SetMatrix4("model", ref model);
+            _shader.SetMatrix3("modelNormals", ref normalMatrix);
             GL.DrawArrays(PrimitiveType.Triangles, 0, _vertices);
         }
     }
