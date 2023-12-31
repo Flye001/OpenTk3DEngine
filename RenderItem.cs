@@ -7,11 +7,12 @@ namespace OpenTkEngine
     {
         private readonly int _vertexArrayObject;
         private readonly int _vertexBufferObject;
-        private int _vertices;
+        private readonly int _vertices;
+        private readonly Shader _shader;
 
         public Matrix4 ModelMatrix { get; set; }
 
-        public RenderItem(string modelPath, Matrix4 initialModelMatrix, Vector3 Color)
+        public RenderItem(string modelPath, Matrix4 initialModelMatrix, Vector3 color, Shader shader)
         {
             Mesh mesh = new();
             if (!mesh.LoadFromObjectFile(modelPath))
@@ -20,6 +21,7 @@ namespace OpenTkEngine
             }
 
             ModelMatrix = initialModelMatrix;
+            _shader = shader;
 
             // Bind this items vertex array
             _vertexArrayObject = GL.GenVertexArray();
@@ -53,9 +55,9 @@ namespace OpenTkEngine
                 vertices.Add(normal.Y);
                 vertices.Add(normal.Z);
                 // Point 1 Color
-                vertices.Add(Color.X);
-                vertices.Add(Color.Y);
-                vertices.Add(Color.Z);
+                vertices.Add(color.X);
+                vertices.Add(color.Y);
+                vertices.Add(color.Z);
                 // Point 2 Vertices
                 vertices.Add(triangle.Point2.X);
                 vertices.Add(triangle.Point2.Y);
@@ -65,9 +67,9 @@ namespace OpenTkEngine
                 vertices.Add(normal.Y);
                 vertices.Add(normal.Z);
                 // Point 2 Color
-                vertices.Add(Color.X);
-                vertices.Add(Color.Y);
-                vertices.Add(Color.Z);
+                vertices.Add(color.X);
+                vertices.Add(color.Y);
+                vertices.Add(color.Z);
                 // Point 3 Vertices
                 vertices.Add(triangle.Point3.X);
                 vertices.Add(triangle.Point3.Y);
@@ -77,22 +79,22 @@ namespace OpenTkEngine
                 vertices.Add(normal.Y);
                 vertices.Add(normal.Z);
                 // Point 3 Color
-                vertices.Add(Color.X);
-                vertices.Add(Color.Y);
-                vertices.Add(Color.Z);
+                vertices.Add(color.X);
+                vertices.Add(color.Y);
+                vertices.Add(color.Z);
             }
             var verticesArr = vertices.ToArray();
             _vertices = verticesArr.Length;
             GL.BufferData(BufferTarget.ArrayBuffer, verticesArr.Length * sizeof(float), verticesArr, BufferUsageHint.StaticDraw);
         }
 
-        public void Draw(Shader shader)
+        public void Draw()
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BindVertexArray(_vertexArrayObject);
-            shader.Use();
+            _shader.Use();
             var model = ModelMatrix;
-            shader.SetMatrix4("model", ref model);
+            _shader.SetMatrix4("model", ref model);
             GL.DrawArrays(PrimitiveType.Triangles, 0, _vertices);
         }
     }

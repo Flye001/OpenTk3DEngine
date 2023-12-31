@@ -69,9 +69,19 @@ namespace OpenTkEngine
             var light = new Vector3(0, 30.0f, 0f);
             _basicShader.SetVector3("lightPos", ref light);
 
-            _renderItems.Add(new RenderItem("GameModels/mountains.obj", Matrix4.CreateTranslation(10f, -15f, 30f), new Vector3(0.7f, 0.4f, 0.1f)));
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-35f, -14.5f, 50f), new Vector3(0f, 1f, 0f)));
-            _renderItems.Add(new RenderItem("GameModels/cube.obj", Matrix4.CreateTranslation(0, 30, 0), Vector3.One));
+            _renderItems.Add(new RenderItem("GameModels/mountains.obj", Matrix4.CreateTranslation(10f, -15f, 30f), new Vector3(0.7f, 0.4f, 0.1f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-35f, -14.5f, 50f), new Vector3(0f, 1f, 0f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/cube.obj", Matrix4.CreateTranslation(0, 30, 0), Vector3.One, _basicShader));
+
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-35f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-30f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-25f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-20f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-15f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-10f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-5f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(0f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader));
+
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -165,7 +175,7 @@ namespace OpenTkEngine
 
             foreach (var renderItem in _renderItems)
             {
-                renderItem.Draw(_basicShader);
+                renderItem.Draw();
             }
 
             //GL.BindVertexArray(_vertexArrayObject);
