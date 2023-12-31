@@ -43,7 +43,6 @@ namespace OpenTkEngine
                 var line1 = triangle.Point2 - triangle.Point1;
                 var line2 = triangle.Point3 - triangle.Point1;
                 var normal = Vector3.Cross(line1, line2);
-                normal = Vector3.Normalize(normal);
 
                 // Point 1 vertices
                 vertices.Add(triangle.Point1.X);

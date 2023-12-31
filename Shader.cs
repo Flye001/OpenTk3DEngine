@@ -68,6 +68,13 @@ namespace OpenTkEngine
             GL.UniformMatrix4(location, true, ref matrix);
         }
 
+        public void SetVector3(string name, ref Vector3 vector)
+        {
+            GL.UseProgram(Handle);
+            var location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform3(location, ref vector);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposedValue)

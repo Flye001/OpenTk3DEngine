@@ -60,14 +60,18 @@ namespace OpenTkEngine
 
             var aspect = _windowWidth / (float)_windowHeight;
 
-            _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 2f, aspect, 0.1f, 100f);
+            _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 2f, aspect, 0.1f, 1000f);
 
             _camera = new Camera(Vector3.Zero, aspect);
             CursorState = CursorState.Grabbed;
 
             _basicShader.SetMatrix4("projection", ref _projectionMatrix);
+            var light = new Vector3(0, 30.0f, 0f);
+            _basicShader.SetVector3("lightPos", ref light);
 
-            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.Identity, new Vector3(1f, 1f, 1f)));
+            _renderItems.Add(new RenderItem("GameModels/mountains.obj", Matrix4.CreateTranslation(10f, -15f, 30f), new Vector3(0.7f, 0.4f, 0.1f)));
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.CreateTranslation(-35f, -14.5f, 50f), new Vector3(0f, 1f, 0f)));
+            _renderItems.Add(new RenderItem("GameModels/cube.obj", Matrix4.CreateTranslation(0, 30, 0), Vector3.One));
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -84,7 +88,7 @@ namespace OpenTkEngine
                 Close();
             }
             
-            var speed = 4f;
+            var speed = 10f;
             var sensitivity = 0.2f * (float.Pi / 180f);
 
             if (KeyboardState.IsKeyDown(Keys.W))
@@ -137,6 +141,8 @@ namespace OpenTkEngine
                 Console.WriteLine("FPS: " + fps);
                 deltaTime = 0;
                 frameCount = 0;
+
+                Console.WriteLine($"Current Camera Pos: {_camera.Position.X},{_camera.Position.Y},{_camera.Position.Z}");
             }
 
             // Create rotation matrix
