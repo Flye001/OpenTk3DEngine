@@ -77,11 +77,13 @@ namespace OpenTkEngine
 
             var aspect = _windowHeight / (float)_windowWidth;
             //_modelMatrix = Matrix4.CreateRotationZ(1f);
+            //_modelMatrix = Matrix4.CreateTranslation(0, 0f, -7f);
             _viewMatrix = Matrix4.CreateTranslation(0f, 0f, -7f);
+            _modelMatrix = Matrix4.Identity;
             _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 2f, aspect, 0.1f, 100f);
 
 
-            //_basicShader.SetMatrix4("model", ref _modelMatrix);
+            _basicShader.SetMatrix4("model", ref _modelMatrix);
             _basicShader.SetMatrix4("view", ref _viewMatrix);
             _basicShader.SetMatrix4("projection", ref _projectionMatrix);
 

@@ -14,7 +14,7 @@ void main()
     gl_Position = vec4(inPos, 1.0) * model * view * projection;
 
     // Light Direction
-    vec lightPosition = vec4(0.0, 1.0, 1.0);
+    vec3 lightPosition = vec3(0.0, 1.0, 1.0);
     vec3 lightDir = normalize(lightPosition);
     vec4 transformedNormal = vec4(inNormal, 1.0) * model;
     float shade = max(0.1, dot(lightDir, transformedNormal.xyz));
