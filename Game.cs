@@ -13,7 +13,6 @@ namespace OpenTkEngine
         private int _vertexBufferObject;
         private int _vertexArrayObject;
         private Shader _basicShader;
-        private Shader _basicRedShader;
 
         // FPS Stuff
         private double deltaTime;
@@ -38,6 +37,7 @@ namespace OpenTkEngine
 
         // Models
         private Mesh _modelMesh;
+        private List<RenderItem> _renderItems = new();
 
         public Game(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { ClientSize = (width, height), Title = title })
         {
@@ -55,101 +55,19 @@ namespace OpenTkEngine
             GL.ClearColor(0f, 0f, 0f, 1f);
             GL.Enable(EnableCap.DepthTest);
             
-            // Store Vertices
-            _vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(_vertexArrayObject);
-
-            _vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-
-            // Vertices
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(0);
-            // Normals
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 3 * sizeof(float));
-            GL.EnableVertexAttribArray(1);
-            // Colors
-            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 6 * sizeof(float));
-            GL.EnableVertexAttribArray(2);
 
             _basicShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShader.frag");
-            _basicRedShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShaderRed.frag");
 
-            // Load Mesh
-            if (!_modelMesh.LoadFromObjectFile("GameModels/axis.obj"))
-            {
-                throw new Exception("Failed to load obj file!");
-            }
+            var aspect = _windowWidth / (float)_windowHeight;
 
-            var aspect = _windowHeight / (float)_windowWidth;
-            //_modelMatrix = Matrix4.CreateRotationZ(1f);
-            //_modelMatrix = Matrix4.CreateTranslation(0, 0f, -7f);
-            //_viewMatrix = Matrix4.LookAt(_cameraPosition, _cameraTarget, _up);
-            _modelMatrix = Matrix4.Identity;
-            _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4f, aspect, 0.1f, 100f);
+            _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 2f, aspect, 0.1f, 100f);
 
-            _camera = new Camera(Vector3.UnitZ * 3, _windowWidth / (float)_windowHeight);
+            _camera = new Camera(Vector3.Zero, aspect);
             CursorState = CursorState.Grabbed;
 
-            _basicShader.SetMatrix4("model", ref _modelMatrix);
-            //_basicShader.SetMatrix4("view", ref _viewMatrix);
             _basicShader.SetMatrix4("projection", ref _projectionMatrix);
 
-
-            // Load in points
-            Vector3 Color = new(1f, 1f, 1f);
-            List<float> vertices = new();
-            foreach (var triangle in _modelMesh.Triangles)
-            {
-                var line1 = triangle.Point2 - triangle.Point1;
-                var line2 = triangle.Point3 - triangle.Point1;
-                var normal = Vector3.Cross(line1, line2);
-                normal = Vector3.Normalize(normal);
-
-                // Point 1 vertices
-                vertices.Add(triangle.Point1.X);
-                vertices.Add(triangle.Point1.Y);
-                vertices.Add(triangle.Point1.Z);
-                // Point 1 Normal
-                vertices.Add(normal.X);
-                vertices.Add(normal.Y);
-                vertices.Add(normal.Z);
-                // Point 1 Color
-                vertices.Add(Color.X);
-                vertices.Add(Color.Y);
-                vertices.Add(Color.Z);
-                // Point 2 Vertices
-                vertices.Add(triangle.Point2.X);
-                vertices.Add(triangle.Point2.Y);
-                vertices.Add(triangle.Point2.Z);
-                // Point 2 Normal
-                vertices.Add(normal.X);
-                vertices.Add(normal.Y);
-                vertices.Add(normal.Z);
-                // Point 2 Color
-                vertices.Add(Color.X);
-                vertices.Add(Color.Y);
-                vertices.Add(Color.Z);
-                // Point 3 Vertices
-                vertices.Add(triangle.Point3.X);
-                vertices.Add(triangle.Point3.Y);
-                vertices.Add(triangle.Point3.Z);
-                // Point 3 Normal
-                vertices.Add(normal.X);
-                vertices.Add(normal.Y);
-                vertices.Add(normal.Z);
-                // Point 3 Color
-                vertices.Add(Color.X);
-                vertices.Add(Color.Y);
-                vertices.Add(Color.Z);
-            }
-
-            var verticesArr = vertices.ToArray();
-
-            // Buffer custom model
-            vertexBufferLength = verticesArr.Length * sizeof(float);
-            _vertexCount = verticesArr.Length / 3;
-            GL.BufferData(BufferTarget.ArrayBuffer, vertexBufferLength, verticesArr, BufferUsageHint.StaticDraw);
+            _renderItems.Add(new RenderItem("GameModels/teapot.obj", Matrix4.Identity, new Vector3(1f, 1f, 1f)));
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -239,11 +157,15 @@ namespace OpenTkEngine
             GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            foreach (var renderItem in _renderItems)
+            {
+                renderItem.Draw(_basicShader);
+            }
 
-            GL.BindVertexArray(_vertexArrayObject);
+            //GL.BindVertexArray(_vertexArrayObject);
             // Draw solid triangles
-            _basicShader.Use();
-            GL.DrawArrays(PrimitiveType.Triangles, 0, _vertexCount);
+            //_basicShader.Use();
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, _vertexCount);
             // Draw Wireframe
             //_basicRedShader.Use();
             //GL.DrawArrays(PrimitiveType.LineLoop, 0, _vertexCount);
