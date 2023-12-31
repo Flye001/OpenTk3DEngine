@@ -31,9 +31,9 @@ namespace OpenTkEngine
                         case 'v':
                             if (line[1] == 't')
                             {
-                                // Vertex
+                                // Texture
                                 var vertex = line.Split(' ');
-                                tempTextures.Add(new Vector2(float.Parse(vertex[1]), 1 - float.Parse(vertex[2])));
+                                tempTextures.Add(new Vector2(float.Parse(vertex[1]), 1-float.Parse(vertex[2])));
                             }
                             else
                             {

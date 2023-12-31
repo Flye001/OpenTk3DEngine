@@ -125,16 +125,16 @@ namespace OpenTkEngine
 
         public void Draw()
         {
-            //if (_texture != null)
-            //{
-            //    _texture.Use();
-            //    _shader.SetInt("texture0", 1);
-            //}
-
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BindVertexArray(_vertexArrayObject);
 
+            if (_texture != null)
+            {
+                _texture.Use();
+                _shader.SetInt("texture0", 0);
+            }
             _shader.Use();
+
             var model = _modelMatrix;
             var normalMatrix = new Matrix3(Matrix4.Transpose(Matrix4.Invert(model)));
             _shader.SetMatrix4("model", ref model);

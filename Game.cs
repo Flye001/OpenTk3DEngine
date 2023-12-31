@@ -54,7 +54,10 @@ namespace OpenTkEngine
 
             GL.ClearColor(0f, 0f, 0f, 1f);
             GL.Enable(EnableCap.DepthTest);
-            
+
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToBorder);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToBorder);
+
 
             _basicShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShader.frag");
             _sunShader = new Shader("Shaders/basicShader.vert", "Shaders/noLightShader.frag");
@@ -76,14 +79,14 @@ namespace OpenTkEngine
             _texShader.SetVector3("lightPos", ref light);
 
             _planeTex = new Texture("GameModels/AirplaneTexture.png");
+            _spyroTex = new Texture("GameModels/spyro.png");
 
-            //_renderItems.Add(new RenderItem("GameModels/mountains.obj", new Vector3(10f, -15f, 30f), new Vector3(0.7f, 0.4f, 0.1f), _basicShader));
+            _renderItems.Add(new RenderItem("GameModels/mountains.obj", new Vector3(10f, -15f, 30f), new Vector3(0.7f, 0.4f, 0.1f), _basicShader));
             //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-35f, -14.5f, 50f), new Vector3(0f, 1f, 0f), _basicShader));
-            //_renderItems.Add(new RenderItem("GameModels/cube.obj", new Vector3(0, 30, 0), Vector3.One, _sunShader));
+            _renderItems.Add(new RenderItem("GameModels/cube.obj", new Vector3(0, 30, 0), Vector3.One, _sunShader));
 
             _renderItems.Add(new RenderItem("GameModels/Airplane.obj", new Vector3(0, 0, 0), new(1, 0, 0), _texShader, hasTexture: true, texture: _planeTex, scale: 0.01f));
 
-            //_spyroTex = new Texture("GameModels/spyro.png");
             //_renderItems.Add(new RenderItem("GameModels/spyro.obj", Vector3.Zero, Vector3.One, _texShader, true, false, 1f, _spyroTex));
 
             //_renderItems.Add(new RenderItem("GameModels/teapot.obj", new Vector3(-35f, 0f, 45f), new Vector3(0f, 1f, 0f), _basicShader, rotate: true));
@@ -173,8 +176,6 @@ namespace OpenTkEngine
             var zRotationMatrix = Matrix4.CreateRotationZ(fTheta);
             var xRotationMatrix = Matrix4.CreateRotationX(fTheta * 0.5f);
 
-           // _modelMatrix = zRotationMatrix * xRotationMatrix;
-            //_basicShader.SetMatrix4("model", ref _modelMatrix);
             var viewMatrix = _camera.GetViewMatrix();
             _basicShader.SetMatrix4("view", ref viewMatrix);
             _sunShader.SetMatrix4("view", ref viewMatrix);
@@ -192,9 +193,6 @@ namespace OpenTkEngine
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            _planeTex.Use();
-            _texShader.SetInt("texture0", 0);
 
             foreach (var renderItem in _renderItems)
             {
