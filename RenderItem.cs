@@ -93,14 +93,14 @@ namespace OpenTkEngine
             GL.BufferData(BufferTarget.ArrayBuffer, verticesArr.Length * sizeof(float), verticesArr, BufferUsageHint.StaticDraw);
         }
 
-        private float fTheta;
+        private float _fTheta;
         public void Update(double time)
         {
             if (_rotate)
             {
-                fTheta += 1f * (float)time;
-                var zRotationMatrix = Matrix4.CreateRotationZ(fTheta);
-                var xRotationMatrix = Matrix4.CreateRotationX(fTheta * 0.5f);
+                _fTheta += 1f * (float)time;
+                var zRotationMatrix = Matrix4.CreateRotationZ(_fTheta);
+                var xRotationMatrix = Matrix4.CreateRotationX(_fTheta * 0.5f);
 
                 var rot = zRotationMatrix * xRotationMatrix;
                 _modelMatrix = rot * Matrix4.CreateTranslation(_position);
