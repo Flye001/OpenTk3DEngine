@@ -23,10 +23,15 @@ namespace OpenTkEngine
         private int _windowWidth;
         private int _windowHeight;
 
-        // Window Stuff
+        // Transformation matrices
         private Matrix4 _modelMatrix; // Moves local object into world space
         private Matrix4 _viewMatrix; // Transforms objects into camera view space
         private Matrix4 _projectionMatrix; // Transforms objects into clipping space
+        // Camera
+        private Camera _camera;
+        private Vector2 _lastMousePos;
+        private bool _firstMove;
+        // Misc
         private float fTheta;
         private int vertexBufferLength;
         private int _vertexCount;
@@ -49,7 +54,8 @@ namespace OpenTkEngine
 
             GL.ClearColor(0f, 0f, 0f, 1f);
             GL.Enable(EnableCap.DepthTest);
-
+            
+            // Store Vertices
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
@@ -70,7 +76,7 @@ namespace OpenTkEngine
             _basicRedShader = new Shader("Shaders/basicShader.vert", "Shaders/basicShaderRed.frag");
 
             // Load Mesh
-            if (!_modelMesh.LoadFromObjectFile("GameModels/teapot.obj"))
+            if (!_modelMesh.LoadFromObjectFile("GameModels/axis.obj"))
             {
                 throw new Exception("Failed to load obj file!");
             }
@@ -78,13 +84,15 @@ namespace OpenTkEngine
             var aspect = _windowHeight / (float)_windowWidth;
             //_modelMatrix = Matrix4.CreateRotationZ(1f);
             //_modelMatrix = Matrix4.CreateTranslation(0, 0f, -7f);
-            _viewMatrix = Matrix4.CreateTranslation(0f, 0f, -7f);
+            //_viewMatrix = Matrix4.LookAt(_cameraPosition, _cameraTarget, _up);
             _modelMatrix = Matrix4.Identity;
-            _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 2f, aspect, 0.1f, 100f);
+            _projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(float.Pi / 4f, aspect, 0.1f, 100f);
 
+            _camera = new Camera(Vector3.UnitZ * 3, _windowWidth / (float)_windowHeight);
+            CursorState = CursorState.Grabbed;
 
             _basicShader.SetMatrix4("model", ref _modelMatrix);
-            _basicShader.SetMatrix4("view", ref _viewMatrix);
+            //_basicShader.SetMatrix4("view", ref _viewMatrix);
             _basicShader.SetMatrix4("projection", ref _projectionMatrix);
 
 
@@ -148,15 +156,63 @@ namespace OpenTkEngine
         {
             base.OnUpdateFrame(args);
 
+            if (!IsFocused) // Check to see if the window is focused
+            {
+                return;
+            }
+
             if (KeyboardState.IsKeyDown(Keys.Escape))
             {
                 Close();
+            }
+            
+            var speed = 4f;
+            var sensitivity = 0.2f * (float.Pi / 180f);
+
+            if (KeyboardState.IsKeyDown(Keys.W))
+            {
+                _camera.Position += _camera.Front * speed * (float)args.Time;
+            }
+            if (KeyboardState.IsKeyDown(Keys.S))
+            {
+                _camera.Position -= _camera.Front * speed * (float)args.Time;
+            }
+            if (KeyboardState.IsKeyDown(Keys.A))
+            {
+                _camera.Position -= _camera.Right * speed * (float)args.Time;
+            }
+            if (KeyboardState.IsKeyDown(Keys.D))
+            {
+                _camera.Position += _camera.Right * speed * (float)args.Time;
+            }
+            if (KeyboardState.IsKeyDown(Keys.Space))
+            {
+                _camera.Position += _camera.Up * speed * (float)args.Time;
+            }
+            if (KeyboardState.IsKeyDown(Keys.LeftShift))
+            {
+                _camera.Position -= _camera.Up * speed * (float)args.Time;
+            }
+
+            if (_firstMove)
+            {
+                _lastMousePos = new Vector2(MouseState.X, MouseState.Y);
+                _firstMove = false;
+            }
+            else
+            {
+                var deltaX = MouseState.X - _lastMousePos.X;
+                var deltaY = MouseState.Y - _lastMousePos.Y;
+                _lastMousePos = new Vector2(MouseState.X, MouseState.Y);
+
+                _camera.Yaw += deltaX * sensitivity;
+                _camera.Pitch -= deltaY * sensitivity;
             }
 
             // Print FPS
             deltaTime += args.Time;
             frameCount++;
-
+            
             if (deltaTime >= 1)
             {
                 var fps = frameCount / deltaTime;
@@ -170,8 +226,10 @@ namespace OpenTkEngine
             var zRotationMatrix = Matrix4.CreateRotationZ(fTheta);
             var xRotationMatrix = Matrix4.CreateRotationX(fTheta * 0.5f);
 
-            _modelMatrix = zRotationMatrix * xRotationMatrix;
-            _basicShader.SetMatrix4("model", ref _modelMatrix);
+           // _modelMatrix = zRotationMatrix * xRotationMatrix;
+            //_basicShader.SetMatrix4("model", ref _modelMatrix);
+            var viewMatrix = _camera.GetViewMatrix();
+            _basicShader.SetMatrix4("view", ref viewMatrix);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -192,6 +250,7 @@ namespace OpenTkEngine
 
             SwapBuffers();
         }
+
 
         protected override void OnResize(ResizeEventArgs e)
         {
