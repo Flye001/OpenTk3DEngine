@@ -84,10 +84,10 @@ namespace OpenTkEngine
                 // Point 2 Color
                 vertices.Add(color.X);
                 vertices.Add(color.Y);
+                vertices.Add(color.Z);
                 // Point 2 Texture
                 vertices.Add(triangle.TPoint2.X);
                 vertices.Add(triangle.TPoint2.Y);
-                vertices.Add(color.Z);
                 // Point 3 Vertices
                 vertices.Add(triangle.Point3.X);
                 vertices.Add(triangle.Point3.Y);

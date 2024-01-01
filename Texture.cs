@@ -16,14 +16,15 @@ namespace OpenTkEngine
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, Handle);
 
-            if (!File.Exists(imagePath)) throw new Exception("IMAGE NO EXISTY!");
+            if (!File.Exists(imagePath)) throw new Exception("Image not found!");
 
-            StbImage.stbi_set_flip_vertically_on_load(0);
+            StbImage.stbi_set_flip_vertically_on_load(1);
             using (Stream stream = File.OpenRead(imagePath))
             {
                 ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, 
+                    PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
             }
             //List<byte> pixels = new();
             //Bitmap img = new Bitmap(imagePath);
